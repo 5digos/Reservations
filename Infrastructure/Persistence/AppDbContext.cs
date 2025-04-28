@@ -21,7 +21,9 @@ namespace Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {            
-            
+            modelBuilder.Entity<Reservation>()
+                .HasKey(r => r.DropOffBranchOfficeId);
+
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    internal class ReservationStatus
+    public class ReservationStatus
     {
         public int ReservationStatusId { get; set; }
         public string Name { get; set; }

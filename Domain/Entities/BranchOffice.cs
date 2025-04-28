@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    internal class BranchOffice
+    public class BranchOffice
     {
         public int BranchOfficeId { get; set; }
         public string Name { get; set; }
