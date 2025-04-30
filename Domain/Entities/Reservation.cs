@@ -21,7 +21,7 @@ namespace Domain.Entities
 
         // Navigation
         
-        [JsonIgnore] // Requiere using System.Text.Json.Serialization;
+        [JsonIgnore] 
         public ReservationStatus? ReservationStatus { get; set; }
     }
 }

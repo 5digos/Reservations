@@ -25,7 +25,7 @@ namespace Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuración con Fluent API si querés personalizar más
+            
             modelBuilder.Entity<Reservation>(entity =>
             {
                 entity.HasKey(r => r.ReservationId);
@@ -34,7 +34,7 @@ namespace Infrastructure.Persistence
                 entity.Property(r => r.StartTime).IsRequired();
                 entity.Property(r => r.EndTime).IsRequired();
 
-                // Relaciones (simplificadas)
+                
                 entity.HasOne(r => r.ReservationStatus)
                       .WithMany(s => s.Reservations)
                       .HasForeignKey(r => r.ReservationStatusId);
