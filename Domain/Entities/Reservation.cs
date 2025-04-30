@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Domain.Entities
@@ -19,10 +20,8 @@ namespace Domain.Entities
         public DateTime EndTime { get; set; }
 
         // Navigation
-        public User User { get; set; }
-        public Vehicle Vehicle { get; set; }
-        public BranchOffice PickUpBranchOffice { get; set; }
-        public BranchOffice DropOffBranchOffice { get; set; }
-        public ReservationStatus ReservationStatus { get; set; }
+        
+        [JsonIgnore] // Requiere using System.Text.Json.Serialization;
+        public ReservationStatus? ReservationStatus { get; set; }
     }
 }

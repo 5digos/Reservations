@@ -6,24 +6,50 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
 namespace Infrastructure.Persistence
 {
     public class AppDbContext : DbContext
     {
-        //Atributos de las clases para DbContext
+        public AppDbContext(DbContextOptions<AppDbContext> options)
+            : base(options)
+        {
+        }
+
         public DbSet<Reservation> Reservations { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Vehicle> Vehicles { get; set; }
-        public DbSet<BranchOffice> BranchOffices { get; set; }
         public DbSet<ReservationStatus> ReservationStatuses { get; set; }
 
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {            
-            modelBuilder.Entity<Reservation>()
-                .HasKey(r => r.DropOffBranchOfficeId);
+        {
+            base.OnModelCreating(modelBuilder);
 
+            // Configuración con Fluent API si querés personalizar más
+            modelBuilder.Entity<Reservation>(entity =>
+            {
+                entity.HasKey(r => r.ReservationId);
+
+                entity.Property(r => r.Date).HasColumnType("date");
+                entity.Property(r => r.StartTime).IsRequired();
+                entity.Property(r => r.EndTime).IsRequired();
+
+                // Relaciones (simplificadas)
+                entity.HasOne(r => r.ReservationStatus)
+                      .WithMany(s => s.Reservations)
+                      .HasForeignKey(r => r.ReservationStatusId);
+            });
+
+            modelBuilder.Entity<ReservationStatus>(entity =>
+            {
+                entity.HasKey(rs => rs.ReservationStatusId);
+                entity.Property(rs => rs.Name).IsRequired().HasMaxLength(25);
+            });
+            modelBuilder.Entity<ReservationStatus>().HasData(
+            new ReservationStatus { ReservationStatusId = 1, Name = "Pending" },
+            new ReservationStatus { ReservationStatusId = 2, Name = "Confirmed" },
+            new ReservationStatus { ReservationStatusId = 3, Name = "Cancelled" }
+    );
         }
     }
 }

@@ -1,7 +1,13 @@
+using Application.Interfaces.IServices;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Application.Interfaces.ICommand;
+using Infrastructure.Command;
+using Application.Interfaces.IQuery;
+using Infrastructure.Query;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +30,10 @@ builder.Services.AddSwaggerGen(options =>
 
 
 // Custom            
-var connectionString = builder.Configuration["ConnectionString"];
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
@@ -39,6 +48,10 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ICreateReservationCommand, CreateReservationCommand>();
+builder.Services.AddScoped<IGetReservationByIdQuery, GetReservationByIdQuery>();
 
 var app = builder.Build();
 
