@@ -9,9 +9,20 @@ using Application.Interfaces.IQuery;
 using Infrastructure.Query;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddHttpClient<IUserService, IUserService>(client =>
+{
+    client.BaseAddress = new Uri("http://clientes-api/");
+});
+
+builder.Services.AddHttpClient<IVehicleService, IVehicleService>(client =>
+{
+    client.BaseAddress = new Uri("http://vehiculos-api/");
+});
 
 #if DEBUG
 builder.Configuration.AddUserSecrets<Program>();

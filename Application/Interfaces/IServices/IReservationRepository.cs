@@ -12,5 +12,6 @@ namespace Application.Interfaces.IServices
         Task AddAsync(Reservation reservation);
         Task UpdateAsync(Reservation reservation);
         Task DeleteAsync(Guid id);
+
     }
 }

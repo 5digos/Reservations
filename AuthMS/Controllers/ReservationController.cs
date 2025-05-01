@@ -1,9 +1,11 @@
 ﻿using Application.Interfaces.ICommand;
 using Application.Interfaces.IQuery;
+using Application.Interfaces.IServices;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+
 
 namespace AuthMS.Controllers
 {
@@ -16,7 +18,8 @@ namespace AuthMS.Controllers
         private readonly IGetAllReservationsQuery _getAllReservationsQuery;
         private readonly IUpdateReservationCommand _updateReservationCommand;
         private readonly IDeleteReservationCommand _deleteReservationCommand;
-
+        private readonly IVehicleService _vehicleService;
+        private readonly IUserService _userService;
 
 
         public ReservationsController(
@@ -24,13 +27,17 @@ namespace AuthMS.Controllers
             IGetReservationByIdQuery getReservationByIdQuery,
             IGetAllReservationsQuery getAllReservationsQuery,
             IUpdateReservationCommand updateReservationCommand,
-            IDeleteReservationCommand deleteReservationCommand)
+            IDeleteReservationCommand deleteReservationCommand,
+            IUserService userService, IVehicleService vehicleService)
         {
             _createReservationCommand = createReservationCommand;
             _getReservationByIdQuery = getReservationByIdQuery;
             _getAllReservationsQuery = getAllReservationsQuery;
             _updateReservationCommand = updateReservationCommand;
             _deleteReservationCommand = deleteReservationCommand;
+            _userService = userService;
+            _vehicleService = vehicleService;
+
         }
 
 
@@ -38,6 +45,11 @@ namespace AuthMS.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
         {
+            var cliente = await _userService.GetUserByIdAsync(reservation.UserId);
+            if (cliente == null) return BadRequest("Cliente inválido");
+
+            var vehiculo = await _vehicleService.GetVehiculoByIdAsync(reservation.VehicleId);
+            if (vehiculo == null) return BadRequest("Vehículo inválido");
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
