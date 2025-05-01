@@ -13,14 +13,27 @@ namespace AuthMS.Controllers
     {
         private readonly ICreateReservationCommand _createReservationCommand;
         private readonly IGetReservationByIdQuery _getReservationByIdQuery;
+        private readonly IGetAllReservationsQuery _getAllReservationsQuery;
+        private readonly IUpdateReservationCommand _updateReservationCommand;
+        private readonly IDeleteReservationCommand _deleteReservationCommand;
+
+
 
         public ReservationsController(
             ICreateReservationCommand createReservationCommand,
-            IGetReservationByIdQuery getReservationByIdQuery)
+            IGetReservationByIdQuery getReservationByIdQuery,
+            IGetAllReservationsQuery getAllReservationsQuery,
+            IUpdateReservationCommand updateReservationCommand,
+            IDeleteReservationCommand deleteReservationCommand)
         {
             _createReservationCommand = createReservationCommand;
             _getReservationByIdQuery = getReservationByIdQuery;
+            _getAllReservationsQuery = getAllReservationsQuery;
+            _updateReservationCommand = updateReservationCommand;
+            _deleteReservationCommand = deleteReservationCommand;
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
@@ -48,6 +61,40 @@ namespace AuthMS.Controllers
 
             return Ok(reservation);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var reservations = await _getAllReservationsQuery.ExecuteAsync();
+            return Ok(reservations);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] Reservation updatedReservation)
+        {
+            try
+            {
+                await _updateReservationCommand.ExecuteAsync(id, updatedReservation);
+                return Ok(new { message = "Reservation updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteReservation(Guid id)
+        {
+            try
+            {
+                await _deleteReservationCommand.ExecuteAsync(id);
+                return Ok(new { message = "Reservation deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+        }
+
+
 
     }
 }

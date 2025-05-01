@@ -52,6 +52,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<ICreateReservationCommand, CreateReservationCommand>();
 builder.Services.AddScoped<IGetReservationByIdQuery, GetReservationByIdQuery>();
+builder.Services.AddScoped<IGetAllReservationsQuery, GetAllReservationsQuery>();
+builder.Services.AddScoped<IUpdateReservationCommand, UpdateReservationCommand>();
+builder.Services.AddScoped<IDeleteReservationCommand, DeleteReservationCommand>();
+
 
 var app = builder.Build();
 
