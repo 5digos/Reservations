@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Dtos.Response;
+using Application.Dtos.Response;
 using System;
 using System.Threading.Tasks;
 
@@ -6,6 +7,6 @@ namespace Application.Interfaces.IQuery
 {
     public interface IGetReservationByIdQuery
     {
-        Task<Reservation?> ExecuteAsync(Guid reservationId);
+        Task<ReservationResponse?> ExecuteAsync(Guid reservationId);
     }
 }

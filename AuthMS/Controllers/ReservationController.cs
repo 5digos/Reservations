@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.ICommand;
+﻿using Application.Dtos.Request;
+using Application.Dtos.Request;
+using Application.Interfaces.ICommand;
 using Application.Interfaces.IQuery;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -17,8 +19,6 @@ namespace AuthMS.Controllers
         private readonly IUpdateReservationCommand _updateReservationCommand;
         private readonly IDeleteReservationCommand _deleteReservationCommand;
 
-
-
         public ReservationsController(
             ICreateReservationCommand createReservationCommand,
             IGetReservationByIdQuery getReservationByIdQuery,
@@ -33,25 +33,24 @@ namespace AuthMS.Controllers
             _deleteReservationCommand = deleteReservationCommand;
         }
 
-
-
+        
         [HttpPost]
-        public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
+        public async Task<IActionResult> CreateReservation([FromBody] CreateReservationRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                await _createReservationCommand.ExecuteAsync(reservation);
-                return Ok(new { message = "Reservation created successfully." });
+                var result = await _createReservationCommand.ExecuteAsync(request);
+                return Ok(result); // Devuelve ReservationResponse
             }
             catch (Exception ex)
             {
-                // Para depuración, luego podés usar logger
                 return StatusCode(500, $"Internal server error: {ex.Message} | {ex.InnerException?.Message}");
             }
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReservationById(Guid id)
         {
@@ -61,18 +60,20 @@ namespace AuthMS.Controllers
 
             return Ok(reservation);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var reservations = await _getAllReservationsQuery.ExecuteAsync();
             return Ok(reservations);
         }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] Reservation updatedReservation)
+        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] UpdateReservationRequest request)
         {
             try
             {
-                await _updateReservationCommand.ExecuteAsync(id, updatedReservation);
+                await _updateReservationCommand.ExecuteAsync(id, request);
                 return Ok(new { message = "Reservation updated successfully." });
             }
             catch (Exception ex)
@@ -80,6 +81,7 @@ namespace AuthMS.Controllers
                 return NotFound(new { error = ex.Message });
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(Guid id)
         {
@@ -93,8 +95,5 @@ namespace AuthMS.Controllers
                 return NotFound(new { error = ex.Message });
             }
         }
-
-
-
     }
 }
