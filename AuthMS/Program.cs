@@ -1,11 +1,28 @@
+using Application.Interfaces.IServices;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Application.Interfaces.ICommand;
+using Infrastructure.Command;
+using Application.Interfaces.IQuery;
+using Infrastructure.Query;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddHttpClient<IUserService, IUserService>(client =>
+{
+    client.BaseAddress = new Uri("http://clientes-api/");
+});
+
+builder.Services.AddHttpClient<IVehicleService, IVehicleService>(client =>
+{
+    client.BaseAddress = new Uri("http://vehiculos-api/");
+});
 
 #if DEBUG
 builder.Configuration.AddUserSecrets<Program>();
@@ -24,7 +41,10 @@ builder.Services.AddSwaggerGen(options =>
 
 
 // Custom            
-var connectionString = builder.Configuration["ConnectionString"];
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
@@ -39,6 +59,14 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<ICreateReservationCommand, CreateReservationCommand>();
+builder.Services.AddScoped<IGetReservationByIdQuery, GetReservationByIdQuery>();
+builder.Services.AddScoped<IGetAllReservationsQuery, GetAllReservationsQuery>();
+builder.Services.AddScoped<IUpdateReservationCommand, UpdateReservationCommand>();
+builder.Services.AddScoped<IDeleteReservationCommand, DeleteReservationCommand>();
+
 
 var app = builder.Build();
 
