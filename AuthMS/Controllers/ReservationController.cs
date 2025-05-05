@@ -44,6 +44,7 @@ namespace AuthMS.Controllers
             {
                 var result = await _createReservationCommand.ExecuteAsync(request);
                 return Ok(result); // Devuelve ReservationResponse
+                //CreatedAtAction(nameof(GetReservationById), new { id = result.ReservationId }, result);
             }
             catch (Exception ex)
             {
@@ -56,7 +57,10 @@ namespace AuthMS.Controllers
         {
             var reservation = await _getReservationByIdQuery.ExecuteAsync(id);
             if (reservation == null)
-                return NotFound();
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
 
             return Ok(reservation);
         }
@@ -71,29 +75,50 @@ namespace AuthMS.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] UpdateReservationRequest request)
         {
+            // 1) Validar existencia
+            var existing = await _getReservationByIdQuery.ExecuteAsync(id);
+            if (existing == null)
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
+
+            // 2) Intentar actualizar
             try
             {
                 await _updateReservationCommand.ExecuteAsync(id, request);
-                return Ok(new { message = "Reservation updated successfully." });
+                return Ok(new
+                {
+                    message = "Reserva actualizada correctamente."
+                });
             }
             catch (Exception ex)
             {
-                return NotFound(new { error = ex.Message });
+                // Si falla por otro motivo, devolvemos 500 con detalle
+                return StatusCode(500, new
+                {
+                    message = ex.Message
+                });
             }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(Guid id)
         {
-            try
+            // 1) Compruebo existencia
+            var existing = await _getReservationByIdQuery.ExecuteAsync(id);
+            if (existing == null)
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
+
+            // 2) Si existe, elimino
+            await _deleteReservationCommand.ExecuteAsync(id);
+            return Ok(new
             {
-                await _deleteReservationCommand.ExecuteAsync(id);
-                return Ok(new { message = "Reservation deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+                message = "Reserva eliminada correctamente."
+            });
         }
     }
 }
