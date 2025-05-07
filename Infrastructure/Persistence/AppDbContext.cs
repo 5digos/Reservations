@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Domain.Enums;
 
 namespace Infrastructure.Persistence
 {
@@ -19,7 +20,7 @@ namespace Infrastructure.Persistence
         }
 
         public DbSet<Reservation> Reservations { get; set; }
-        public DbSet<ReservationStatus> ReservationStatuses { get; set; }
+        public DbSet<ReservationEvent> ReservationEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,28 +29,84 @@ namespace Infrastructure.Persistence
             
             modelBuilder.Entity<Reservation>(entity =>
             {
+                entity.ToTable("Reservations");
                 entity.HasKey(r => r.ReservationId);
+                entity.Property(r => r.ReservationId)
+                    .ValueGeneratedOnAdd();
 
-                entity.Property(r => r.Date).HasColumnType("date");
-                entity.Property(r => r.StartTime).IsRequired();
-                entity.Property(r => r.EndTime).IsRequired();
+                entity.HasMany(r => r.Events)
+                    .WithOne(e => e.Reservation)
+                    .HasForeignKey(e => e.ReservationId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                
-                entity.HasOne(r => r.ReservationStatus)
-                      .WithMany(s => s.Reservations)
-                      .HasForeignKey(r => r.ReservationStatusId);
+                entity.Property(r => r.UserId)
+                    .IsRequired();
+
+                entity.Property(r => r.VehicleId)
+                    .IsRequired();
+
+                entity.Property(r => r.PickupBranchOfficeId)
+                    .IsRequired();
+
+                entity.Property(r => r.DropOffBranchOfficeId)
+                    .IsRequired();
+
+                entity.Property(r => r.StartTime)
+                    .IsRequired();
+
+                entity.Property(r => r.EndTime)
+                    .IsRequired();
+
+                entity.Property(r => r.HourlyRateSnapshot)
+                    .IsRequired()
+                    .HasColumnType("decimal(9,6)");
+
+                entity.Property(r => r.OriginalCost)
+                    .IsRequired(false)
+                    .HasColumnType("decimal(9,6)");
+
+                entity.Property(r => r.LateFee)
+                    .IsRequired(false)
+                    .HasColumnType("decimal(9,6)");
+
+                entity.Property(r => r.Status)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (ReservationStatus)Enum.Parse(typeof(ReservationStatus), v));
+
+                entity.Property(r => r.ActualPickupTime)
+                    .IsRequired(false);
+
+                entity.Property(r => r.ActualReturnTime)
+                    .IsRequired(false);
             });
 
-            modelBuilder.Entity<ReservationStatus>(entity =>
+            modelBuilder.Entity<ReservationEvent>(entity =>
             {
-                entity.HasKey(rs => rs.ReservationStatusId);
-                entity.Property(rs => rs.Name).IsRequired().HasMaxLength(25);
+                entity.ToTable("ReservationEvents");
+                entity.HasKey(e => e.EventId);
+                entity.Property(e => e.EventId)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.ReservationId)
+                    .IsRequired();
+
+                entity.Property(e => e.EventType)
+                    .IsRequired()
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (ReservationEventType)Enum.Parse(typeof(ReservationEventType), v));
+
+                entity.Property(e => e.OccurredAt)
+                    .IsRequired();
+
+                entity.Property(e => e.Details)
+                    .HasColumnType("varchar(max)")
+                    .IsRequired();
             });
-            modelBuilder.Entity<ReservationStatus>().HasData(
-            new ReservationStatus { ReservationStatusId = 1, Name = "Pending" },
-            new ReservationStatus { ReservationStatusId = 2, Name = "Confirmed" },
-            new ReservationStatus { ReservationStatusId = 3, Name = "Cancelled" }
-    );
+
+
         }
     }
 }

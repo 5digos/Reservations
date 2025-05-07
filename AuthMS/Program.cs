@@ -7,22 +7,19 @@ using Application.Interfaces.ICommand;
 using Infrastructure.Command;
 using Application.Interfaces.IQuery;
 using Infrastructure.Query;
+using Application.Interfaces.IServices.IReservationServices;
+using Application.UseCase.ReservationServices;
+using Application.Validators;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using Application.Interfaces.IServices.IVehicleServices;
+using Infrastructure.HttpClients;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddHttpClient<IUserService, IUserService>(client =>
-{
-    client.BaseAddress = new Uri("http://clientes-api/");
-});
-
-builder.Services.AddHttpClient<IVehicleService, IVehicleService>(client =>
-{
-    client.BaseAddress = new Uri("http://vehiculos-api/");
-});
 
 #if DEBUG
 builder.Configuration.AddUserSecrets<Program>();
@@ -33,7 +30,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Template", Version = "1.0" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "ReservationMS", Version = "1.0" });
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     options.IncludeXmlComments(xmlPath);
@@ -48,8 +45,35 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
+//Services
+builder.Services.AddScoped<IReservationPostService, ReservationPostService>();
+builder.Services.AddScoped<IReservationGetService, ReservationGetService>();
+builder.Services.AddScoped<IReservationAvailabilityService, ReservationAvailabilityService>();
 
-//CORS
+builder.Services.AddLogging();
+
+builder.Services.AddHttpClient<IVehicleService, VehicleServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["VehicleService:BaseUrl"]);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
+
+//Command
+builder.Services.AddScoped<IReservationCommand, ReservationCommand>();
+builder.Services.AddScoped<IReservationEventCommand, ReservationEventCommand>();
+
+//Query
+builder.Services.AddScoped<IReservationQuery, ReservationQuery>();
+
+
+//Validators
+builder.Services.AddValidatorsFromAssembly(typeof(ReservationRequestValidator).Assembly);
+builder.Services.AddFluentValidationAutoValidation();
+
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -59,14 +83,6 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
-
-builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
-builder.Services.AddScoped<ICreateReservationCommand, CreateReservationCommand>();
-builder.Services.AddScoped<IGetReservationByIdQuery, GetReservationByIdQuery>();
-builder.Services.AddScoped<IGetAllReservationsQuery, GetAllReservationsQuery>();
-builder.Services.AddScoped<IUpdateReservationCommand, UpdateReservationCommand>();
-builder.Services.AddScoped<IDeleteReservationCommand, DeleteReservationCommand>();
-
 
 var app = builder.Build();
 
