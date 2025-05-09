@@ -1,4 +1,4 @@
-using Application.Interfaces.IServices;
+ï»¿using Application.Interfaces.IServices;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -7,6 +7,7 @@ using Application.Interfaces.ICommand;
 using Infrastructure.Command;
 using Application.Interfaces.IQuery;
 using Infrastructure.Query;
+using Infrastructure.Services;
 
 
 
@@ -46,7 +47,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+
 
 
 //CORS
@@ -66,6 +67,19 @@ builder.Services.AddScoped<IGetReservationByIdQuery, GetReservationByIdQuery>();
 builder.Services.AddScoped<IGetAllReservationsQuery, GetAllReservationsQuery>();
 builder.Services.AddScoped<IUpdateReservationCommand, UpdateReservationCommand>();
 builder.Services.AddScoped<IDeleteReservationCommand, DeleteReservationCommand>();
+builder.Services.AddHttpClient<IVehicleService, VehicleService>(client =>
+{
+    client.BaseAddress = new Uri("http://vehiclems"); // nombre del microservicio en Docker o URL real
+});
+builder.Services.AddHttpClient<IUserService, UserService>(client =>
+{
+    client.BaseAddress = new Uri("http://userms"); // nombre del microservicio en Docker o URL real
+});
+
+builder.Services.AddHttpClient<IBranchOfficeService, BranchOfficeService>(client =>
+{
+    client.BaseAddress = new Uri("http://branchofficems"); 
+});
 
 
 var app = builder.Build();
@@ -73,10 +87,10 @@ var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
-    // Continúa con la solicitud
+    // ContinÃºa con la solicitud
     await next();
 
-    // Si el estado de la respuesta es 401 (No autorizado), añade los encabezados CORS
+    // Si el estado de la respuesta es 401 (No autorizado), aÃ±ade los encabezados CORS
     if (context.Response.StatusCode == 401)
     {
         context.Response.Headers.Add("Access-Control-Allow-Origin", "*");

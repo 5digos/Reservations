@@ -1,26 +1,24 @@
 ﻿using Application.Interfaces.IServices;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Application.Dtos.Request;
-using Application.Interfaces.IServices;
-using Domain.Entities;
-
 
 namespace Infrastructure.Services
 {
-    public class UserService : IUserService
+    public class VehicleService : IVehicleService
     {
         private readonly HttpClient _httpClient;
 
-        public UserService(HttpClient httpClient)
+        public VehicleService(HttpClient httpClient)
         {
             _httpClient = httpClient;
         }
 
-        public async Task<bool> IsUserValidAsync(int userId)
+        public async Task<bool> ExistsAsync(Guid vehicleId)
+
         {
-            //Cuando tengamos UserMs
-            //var response = await _httpClient.GetAsync($"/api/users/{userId}");
+            //Todavia no tenesmo VehicleMS
+            //var response = await _httpClient.GetAsync($"/api/vehicles/{vehicleId}");
             //return response.IsSuccessStatusCode;
 
             // Simulación temporal:

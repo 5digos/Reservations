@@ -1,7 +1,9 @@
-﻿using Application.Interfaces.IQuery;
+﻿using Application.Dtos.Response;
+using Application.Dtos.Response;
+using Application.Interfaces.IQuery;
 using Application.Interfaces.IServices;
-using Domain.Entities;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Query
@@ -15,9 +17,22 @@ namespace Infrastructure.Query
             _repository = repository;
         }
 
-        public async Task<List<Reservation>> ExecuteAsync()
+        public async Task<List<ReservationResponse>> ExecuteAsync()
         {
-            return await _repository.GetAllAsync();
+            var list = await _repository.GetAllAsync();
+
+            return list.Select(r => new ReservationResponse
+            {
+                ReservationId = r.ReservationId,
+                VehicleId = r.VehicleId,
+                UserId = r.UserId,
+                PickUpBranchOfficeId = r.PickUpBranchOfficeId,
+                DropOffBranchOfficeId = r.DropOffBranchOfficeId,
+                Date = r.Date,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                ReservationStatusId = r.ReservationStatusId
+            }).ToList();
         }
     }
 }

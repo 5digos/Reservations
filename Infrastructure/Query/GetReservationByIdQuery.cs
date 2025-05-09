@@ -1,6 +1,7 @@
-﻿using Application.Interfaces.IQuery;
+﻿using Application.Dtos.Response;
+using Application.Dtos.Response;
+using Application.Interfaces.IQuery;
 using Application.Interfaces.IServices;
-using Domain.Entities;
 using System;
 using System.Threading.Tasks;
 
@@ -15,9 +16,23 @@ namespace Infrastructure.Query
             _repository = repository;
         }
 
-        public async Task<Reservation?> ExecuteAsync(Guid reservationId)
+        public async Task<ReservationResponse?> ExecuteAsync(Guid reservationId)
         {
-            return await _repository.GetByIdAsync(reservationId);
+            var reservation = await _repository.GetByIdAsync(reservationId);
+            if (reservation == null) return null;
+
+            return new ReservationResponse
+            {
+                ReservationId = reservation.ReservationId,
+                VehicleId = reservation.VehicleId,
+                UserId = reservation.UserId,
+                PickUpBranchOfficeId = reservation.PickUpBranchOfficeId,
+                DropOffBranchOfficeId = reservation.DropOffBranchOfficeId,
+                Date = reservation.Date,
+                StartTime = reservation.StartTime,
+                EndTime = reservation.EndTime,
+                ReservationStatusId = reservation.ReservationStatusId
+            };
         }
     }
 }

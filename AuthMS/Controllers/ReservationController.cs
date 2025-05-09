@@ -1,4 +1,6 @@
-﻿using Application.Interfaces.ICommand;
+﻿using Application.Dtos.Request;
+using Application.Dtos.Request;
+using Application.Interfaces.ICommand;
 using Application.Interfaces.IQuery;
 using Application.Interfaces.IServices;
 using Domain.Entities;
@@ -18,9 +20,12 @@ namespace AuthMS.Controllers
         private readonly IGetAllReservationsQuery _getAllReservationsQuery;
         private readonly IUpdateReservationCommand _updateReservationCommand;
         private readonly IDeleteReservationCommand _deleteReservationCommand;
+<<<<<<< HEAD
         private readonly IVehicleService _vehicleService;
         private readonly IUserService _userService;
 
+=======
+>>>>>>> 03abab8cd72fddcaadd9a63e57cf7929ae7a05e4
 
         public ReservationsController(
             ICreateReservationCommand createReservationCommand,
@@ -40,10 +45,9 @@ namespace AuthMS.Controllers
 
         }
 
-
-
+        
         [HttpPost]
-        public async Task<IActionResult> CreateReservation([FromBody] Reservation reservation)
+        public async Task<IActionResult> CreateReservation([FromBody] CreateReservationRequest request)
         {
             var cliente = await _userService.GetUserByIdAsync(reservation.UserId);
             if (cliente == null) return BadRequest("Cliente inválido");
@@ -55,58 +59,83 @@ namespace AuthMS.Controllers
 
             try
             {
-                await _createReservationCommand.ExecuteAsync(reservation);
-                return Ok(new { message = "Reservation created successfully." });
+                var result = await _createReservationCommand.ExecuteAsync(request);
+                return Ok(result); // Devuelve ReservationResponse
+                //CreatedAtAction(nameof(GetReservationById), new { id = result.ReservationId }, result);
             }
             catch (Exception ex)
             {
-                // Para depuración, luego podés usar logger
                 return StatusCode(500, $"Internal server error: {ex.Message} | {ex.InnerException?.Message}");
             }
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReservationById(Guid id)
         {
             var reservation = await _getReservationByIdQuery.ExecuteAsync(id);
             if (reservation == null)
-                return NotFound();
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
 
             return Ok(reservation);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var reservations = await _getAllReservationsQuery.ExecuteAsync();
             return Ok(reservations);
         }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] Reservation updatedReservation)
+        public async Task<IActionResult> UpdateReservation(Guid id, [FromBody] UpdateReservationRequest request)
         {
+            // 1) Validar existencia
+            var existing = await _getReservationByIdQuery.ExecuteAsync(id);
+            if (existing == null)
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
+
+            // 2) Intentar actualizar
             try
             {
-                await _updateReservationCommand.ExecuteAsync(id, updatedReservation);
-                return Ok(new { message = "Reservation updated successfully." });
+                await _updateReservationCommand.ExecuteAsync(id, request);
+                return Ok(new
+                {
+                    message = "Reserva actualizada correctamente."
+                });
             }
             catch (Exception ex)
             {
-                return NotFound(new { error = ex.Message });
+                // Si falla por otro motivo, devolvemos 500 con detalle
+                return StatusCode(500, new
+                {
+                    message = ex.Message
+                });
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteReservation(Guid id)
         {
-            try
+            // 1) Compruebo existencia
+            var existing = await _getReservationByIdQuery.ExecuteAsync(id);
+            if (existing == null)
+                return NotFound(new
+                {
+                    message = "No existe una reserva con ese ID. Intenta nuevamente."
+                });
+
+            // 2) Si existe, elimino
+            await _deleteReservationCommand.ExecuteAsync(id);
+            return Ok(new
             {
-                await _deleteReservationCommand.ExecuteAsync(id);
-                return Ok(new { message = "Reservation deleted successfully." });
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+                message = "Reserva eliminada correctamente."
+            });
         }
-
-
-
     }
 }

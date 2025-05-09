@@ -9,6 +9,6 @@ namespace Application.Interfaces.IServices
 {
     public interface IVehicleService
     {
-        Task<VehicleDto?> GetVehiculoByIdAsync(Guid id);
+        Task<bool> ExistsAsync(Guid vehicleId);
     }
 }

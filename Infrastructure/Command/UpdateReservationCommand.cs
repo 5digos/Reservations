@@ -1,6 +1,7 @@
-﻿using Application.Interfaces.ICommand;
+﻿using Application.Dtos.Request;
+using Application.Dtos.Request;
+using Application.Interfaces.ICommand;
 using Application.Interfaces.IServices;
-using Domain.Entities;
 using System;
 using System.Threading.Tasks;
 
@@ -15,15 +16,14 @@ namespace Infrastructure.Command
             _repository = repository;
         }
 
-        public async Task ExecuteAsync(Guid id, Reservation updatedReservation)
+        public async Task ExecuteAsync(Guid id, UpdateReservationRequest updatedReservation)
         {
             var existing = await _repository.GetByIdAsync(id);
             if (existing == null)
                 throw new Exception("Reservation not found.");
 
-            // Actualizamos los campos deseados
+            // Actualizar solo los campos permitidos
             existing.VehicleId = updatedReservation.VehicleId;
-            existing.ReservationStatusId = updatedReservation.ReservationStatusId;
             existing.UserId = updatedReservation.UserId;
             existing.PickUpBranchOfficeId = updatedReservation.PickUpBranchOfficeId;
             existing.DropOffBranchOfficeId = updatedReservation.DropOffBranchOfficeId;
