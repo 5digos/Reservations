@@ -27,5 +27,19 @@ namespace Infrastructure.Services
             await Task.Delay(10);
             return true;
         }
+        public async Task<UserDto?> GetUserByIdAsync(int id)
+        {
+            //Cuando tengamos UserMs
+            //var response = await _httpClient.GetAsync($"/api/users/{id}");
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    var user = await response.Content.ReadAsAsync<UserDto>();
+            //    return user;
+            //}
+            //return null;
+            // Simulación temporal:
+            await Task.Delay(10);
+            return new UserDto { Id = id};
+        }
     }
 }

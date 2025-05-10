@@ -1,9 +1,9 @@
 ﻿using Application.Dtos.Request;
-using Application.Dtos.Request;
 using Application.Interfaces.ICommand;
 using Application.Interfaces.IQuery;
 using Application.Interfaces.IServices;
 using Domain.Entities;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -20,12 +20,12 @@ namespace AuthMS.Controllers
         private readonly IGetAllReservationsQuery _getAllReservationsQuery;
         private readonly IUpdateReservationCommand _updateReservationCommand;
         private readonly IDeleteReservationCommand _deleteReservationCommand;
-<<<<<<< HEAD
+
+        private readonly IReservationStatusPay _reservationStatusPay;
         private readonly IVehicleService _vehicleService;
         private readonly IUserService _userService;
 
-=======
->>>>>>> 03abab8cd72fddcaadd9a63e57cf7929ae7a05e4
+
 
         public ReservationsController(
             ICreateReservationCommand createReservationCommand,
@@ -33,7 +33,7 @@ namespace AuthMS.Controllers
             IGetAllReservationsQuery getAllReservationsQuery,
             IUpdateReservationCommand updateReservationCommand,
             IDeleteReservationCommand deleteReservationCommand,
-            IUserService userService, IVehicleService vehicleService)
+            IUserService userService, IVehicleService vehicleService, IReservationStatusPay reservationStatusPay)
         {
             _createReservationCommand = createReservationCommand;
             _getReservationByIdQuery = getReservationByIdQuery;
@@ -42,6 +42,7 @@ namespace AuthMS.Controllers
             _deleteReservationCommand = deleteReservationCommand;
             _userService = userService;
             _vehicleService = vehicleService;
+            _reservationStatusPay = reservationStatusPay;
 
         }
 
@@ -49,6 +50,7 @@ namespace AuthMS.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationRequest request)
         {
+            /*
             var cliente = await _userService.GetUserByIdAsync(reservation.UserId);
             if (cliente == null) return BadRequest("Cliente inválido");
 
@@ -56,6 +58,7 @@ namespace AuthMS.Controllers
             if (vehiculo == null) return BadRequest("Vehículo inválido");
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            */
 
             try
             {
@@ -136,6 +139,16 @@ namespace AuthMS.Controllers
             {
                 message = "Reserva eliminada correctamente."
             });
+        }
+        [HttpPut("{id}/payment-status")]
+        public async Task<IActionResult> UpdatePaymentStatus(Guid id)
+        {
+            var result = await _reservationStatusPay.IsReservationStatusPayValidAsync(id);
+
+            if (!result)
+                return BadRequest("No se pudo actualizar el estado de la reserva.");
+
+            return Ok("Estado de la reserva actualizado correctamente.");
         }
     }
 }
