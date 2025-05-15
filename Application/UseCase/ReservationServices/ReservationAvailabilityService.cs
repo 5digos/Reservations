@@ -36,14 +36,14 @@ namespace Application.UseCase.ReservationServices
             string color = null,
             string brand = null)
         {
-            // 1) Traer todos los vehículos estáticos de Vehículos
+            
             var dtos = await _vehicleService.GetVehicles(
                 branchOfficeId,
                 onlyStatusAvailable: true,
                 category, seatingCapacity, transmissionType,
                 maxPrice, color, brand,
-                offset: 0,     // siempre traer todo
-                size: 10000);  // o un límite razonable
+                offset: 0,     
+                size: 10000);  
 
             var filtered = new List<VehicleSummaryResponse>();
 
@@ -56,8 +56,14 @@ namespace Application.UseCase.ReservationServices
                 if (locationAtStart != branchOfficeId) continue;
 
                 // 3) Solapamiento de reservas
-                if (await _reservationQuery
-                      .HasOverlap(v.Id, startTime, endTime))
+                bool hasOverlap = await _reservationQuery
+                       .HasOverlap(
+                           vehicleId: v.Id,
+                           start: startTime,
+                           end: endTime,
+                           bufferHours: 2);
+
+                if (hasOverlap)
                     continue;
 
                 // 4) Mapear a DTO para el front

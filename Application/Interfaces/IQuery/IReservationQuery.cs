@@ -9,7 +9,7 @@ namespace Application.Interfaces.IQuery
 {
     public interface IReservationQuery
     {
-        Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end);
+        Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours);
         Task<Reservation> GetById(Guid reservationId);
         Task<int?> GetLastReturnBranch(Guid vehicleId, DateTime beforeTime);
     }

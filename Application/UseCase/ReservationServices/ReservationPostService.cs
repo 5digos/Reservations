@@ -52,8 +52,9 @@ namespace Application.UseCase.ReservationServices
                 throw new InvalidOperationException("La sucursal de devolución no existe.");
 
             //Validar solapamiento de reservas
+            int bufferHours = 3;
             bool overlap = await _reservationQuery.HasOverlap(
-                request.VehicleId, request.StartTime, request.EndTime);
+                request.VehicleId, request.StartTime, request.EndTime, bufferHours);
             if (overlap)
                 throw new InvalidOperationException("Vehículo no disponible en el rango solicitado.");
 
@@ -93,7 +94,7 @@ namespace Application.UseCase.ReservationServices
             var pickupName = await _vehicleService.GetBranchOfficeName(reservation.PickupBranchOfficeId);
             var dropoffName = await _vehicleService.GetBranchOfficeName(reservation.DropOffBranchOfficeId);
 
-            //Retornar respuesta
+            
             return new ReservationResponse
             {
                 ReservationId = reservation.ReservationId,

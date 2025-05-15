@@ -27,14 +27,17 @@ namespace Infrastructure.Query
                 .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
         }
 
-        public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end)
+        public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours = 3)
         {
+            var buffer = TimeSpan.FromHours(bufferHours);
+
             return await _context.Reservations
-                .AnyAsync(r => r.VehicleId == vehicleId
+                .AnyAsync(r =>
+                    r.VehicleId == vehicleId
                     && r.Status != ReservationStatus.Cancelled
-                    && r.Status != ReservationStatus.AutoCancelled
-                    && r.StartTime < end
-                    && r.EndTime > start);
+                    && r.Status != ReservationStatus.AutoCancelled                    
+                    && r.EndTime.Add(buffer) > start                    
+                    && r.StartTime < end);
         }
 
         public async Task<int?> GetLastReturnBranch(Guid vehicleId, DateTime beforeTime)
