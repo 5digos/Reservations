@@ -34,6 +34,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("ActualReturnTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("DropOffBranchOfficeId")
                         .HasColumnType("int");
 
@@ -41,13 +44,13 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("HourlyRateSnapshot")
-                        .HasColumnType("decimal(9,6)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal?>("LateFee")
-                        .HasColumnType("decimal(9,6)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal?>("OriginalCost")
-                        .HasColumnType("decimal(9,6)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("PickupBranchOfficeId")
                         .HasColumnType("int");
@@ -77,7 +80,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Details")
-                        .IsRequired()
                         .HasColumnType("varchar(max)");
 
                     b.Property<string>("EventType")

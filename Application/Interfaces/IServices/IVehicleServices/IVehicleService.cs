@@ -1,4 +1,5 @@
 ﻿using Application.Dtos.External;
+using Application.Dtos.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,22 +10,36 @@ namespace Application.Interfaces.IServices.IVehicleServices
 {
     public interface IVehicleService
     {
-        Task<decimal> GetHourlyRate(Guid vehicleId);
-        Task<bool> Exists(Guid vehicleId);
-        Task<int> GetStatusId(Guid vehicleId);
-        Task<bool> BranchOfficeExists(int branchOfficeId);
-        Task<string> GetBranchOfficeName(int branchOfficeId);
-        Task<List<VehicleSummaryDto>> GetVehicles(
+        //Task<VehicleDetailResponse?> GetVehicleByIdAsync(Guid vehicleId);
+        //Task<BranchOfficeDetailResponse?> GetBranchOfficeByIdAsync(int branchOfficeId);
+        //Task<List<VehicleSummaryResponse>> GetVehiclesAsync(
+        //    int branchOfficeId,
+        //    bool onlyStatusAvailable,
+        //    int? category = null,
+        //    int? seatingCapacity = null,
+        //    int? transmissionType = null,
+        //    decimal? maxPrice = null,
+        //    string? color = null,
+        //    string? brand = null,
+        //    int offset = 0,
+        //    int size = 10000
+        //);
+
+        Task<List<VehicleSummaryDto>> GetVehiclesAsync(
             int branchOfficeId,
-            bool onlyStatusAvailable,
+            DateTime startTime,
+            DateTime endTime,
             int? category = null,
             int? seatingCapacity = null,
             int? transmissionType = null,
             decimal? maxPrice = null,
-            string color = null,
-            string brand = null,
-            int offset = 0,
-            int size = 10000
-        );
+            string? color = null,
+            string? brand = null,
+            int? offset = null,
+            int? size = null);
+
+        Task<VehicleDetailDto> GetVehicleByIdAsync(Guid vehicleId);
+
+        Task<BranchOfficeDto> GetBranchOfficeByIdAsync(int branchOfficeId);
     }
 }

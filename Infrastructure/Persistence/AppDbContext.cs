@@ -59,15 +59,15 @@ namespace Infrastructure.Persistence
 
                 entity.Property(r => r.HourlyRateSnapshot)
                     .IsRequired()
-                    .HasColumnType("decimal(9,6)");
+                    .HasColumnType("decimal(10,2)");
 
                 entity.Property(r => r.OriginalCost)
                     .IsRequired(false)
-                    .HasColumnType("decimal(9,6)");
+                    .HasColumnType("decimal(10,2)");
 
                 entity.Property(r => r.LateFee)
                     .IsRequired(false)
-                    .HasColumnType("decimal(9,6)");
+                    .HasColumnType("decimal(10,2)");
 
                 entity.Property(r => r.Status)
                     .IsRequired()
@@ -103,7 +103,7 @@ namespace Infrastructure.Persistence
 
                 entity.Property(e => e.Details)
                     .HasColumnType("varchar(max)")
-                    .IsRequired();
+                    .IsRequired(false);
             });
 
 

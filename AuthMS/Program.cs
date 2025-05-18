@@ -2,6 +2,8 @@ using Application.Interfaces.IServices;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using Application.Interfaces.ICommand;
 using Infrastructure.Command;
@@ -14,6 +16,12 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using Application.Interfaces.IServices.IVehicleServices;
 using Infrastructure.HttpClients;
+using Application.Interfaces.IValidator;
+using Application.Dtos.Request;
+using System.Text;
+using Infrastructure.Service;
+using AuthMS.Authorization;
+using Microsoft.AspNetCore.Authorization;
 
 
 
@@ -49,12 +57,20 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conn
 builder.Services.AddScoped<IReservationPostService, ReservationPostService>();
 builder.Services.AddScoped<IReservationGetService, ReservationGetService>();
 builder.Services.AddScoped<IReservationAvailabilityService, ReservationAvailabilityService>();
+builder.Services.AddSingleton<ITimeProvider, ArgentinaTimeProvider>();
 
 builder.Services.AddLogging();
 
 builder.Services.AddHttpClient<IVehicleService, VehicleServiceClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["VehicleService:BaseUrl"]);
+    client.DefaultRequestHeaders.Accept.Add(
+        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+});
+
+builder.Services.AddHttpClient<INotificationService, NotificationServiceClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NotificationService:BaseUrl"]!);
     client.DefaultRequestHeaders.Accept.Add(
         new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
@@ -71,7 +87,50 @@ builder.Services.AddScoped<IReservationQuery, ReservationQuery>();
 //Validators
 builder.Services.AddValidatorsFromAssembly(typeof(ReservationRequestValidator).Assembly);
 builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<GetAvailableVehiclesRequestValidator>();
+builder.Services.AddScoped<IValidatorHandler<GetAvailableVehiclesRequest>, ValidatorHandler<GetAvailableVehiclesRequest>>();
 
+
+//TokenConfiguration
+var jwtKey = builder.Configuration["JwtSettings:key"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new Exception("No se encontró 'JwtSettings:key'. Configúralo en User Secrets o Variables de Entorno.");
+}
+
+builder.Services.AddAuthentication(config =>
+{
+    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(config =>
+{
+    config.RequireHttpsMetadata = false;
+    config.SaveToken = true;
+    config.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("ActiveUser", policy => policy.RequireClaim("IsActive", "True"));
+});
+
+builder.Services.AddSingleton<IAuthorizationHandler, SameUserHandler>();
+
+builder.Services.AddAuthorization(options =>
+{
+    // deja tu política ActiveUser si la necesitas...
+    options.AddPolicy("SameUserPolicy", policy =>
+        policy.Requirements.Add(new SameUserRequirement()));
+});
 
 
 builder.Services.AddCors(options =>
@@ -111,7 +170,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseAuthentication();
+app.UseAuthentication();
 
 app.UseAuthorization();
 

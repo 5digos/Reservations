@@ -1,4 +1,5 @@
 ﻿using Application.Dtos.Response;
+using Application.Exceptions;
 using Application.Interfaces.IQuery;
 using Application.Interfaces.IServices.IReservationServices;
 using Application.Interfaces.IServices.IVehicleServices;
@@ -24,14 +25,15 @@ namespace Application.UseCase.ReservationServices
         }
 
 
-        public async Task<ReservationResponse> GetById(Guid reservationId)
+        public async Task<ReservationResponse?> GetById(Guid reservationId)
         {
             var res = await _reservationQuery.GetById(reservationId);
-            if (res == null) return null;
+            if (res == null)
+                throw new NotFoundException("Reserva no encontrada.");
 
             // Obtener nombres de sucursales
-            var pickupName = await _vehicleService.GetBranchOfficeName(res.PickupBranchOfficeId);
-            var dropoffName = await _vehicleService.GetBranchOfficeName(res.DropOffBranchOfficeId);
+            var pickupBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.PickupBranchOfficeId);
+            var dropOffBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.DropOffBranchOfficeId);
 
             return new ReservationResponse
             {
@@ -39,12 +41,18 @@ namespace Application.UseCase.ReservationServices
                 UserId = res.UserId,
                 VehicleId = res.VehicleId,
                 PickupBranchOfficeId = res.PickupBranchOfficeId,
-                PickupBranchOfficeName = pickupName,
+                PickupBranchOfficeName = pickupBranch?.Name,
                 DropOffBranchOfficeId = res.DropOffBranchOfficeId,
-                DropOffBranchOfficeName = dropoffName,
+                DropOffBranchOfficeName = dropOffBranch?.Name,
                 StartTime = res.StartTime,
                 EndTime = res.EndTime,
-                HourlyRateSnapshot = res.HourlyRateSnapshot
+                ActualPickupTime = res.ActualPickupTime,
+                ActualReturnTime = res.ActualReturnTime,
+                HourlyRateSnapshot = res.HourlyRateSnapshot,
+                OriginalCost = res.OriginalCost,
+                LateFee = res.LateFee,
+                Status = res.Status,
+                CreatedAt = res.CreatedAt
             };
         }
     }

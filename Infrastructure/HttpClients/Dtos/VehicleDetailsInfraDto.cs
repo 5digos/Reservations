@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.HttpClients.Dtos
 {
-    public class BranchOfficeDto
+    public class VehicleDetailsInfraDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public VehicleResponseInfraDto Vehicle { get; set; }
+       
     }
 }

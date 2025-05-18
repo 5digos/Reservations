@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.HttpClients.Dtos
 {
-    public class VehicleCategoryDto
+    public class GenericInfraDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

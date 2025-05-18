@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,12 +12,26 @@ namespace Application.Dtos.Response
         public Guid ReservationId { get; set; }
         public int UserId { get; set; }
         public Guid VehicleId { get; set; }
+
         public int PickupBranchOfficeId { get; set; }
-        public string PickupBranchOfficeName { get; set; }
+        public string PickupBranchOfficeName { get; set; } = null!;
+
         public int DropOffBranchOfficeId { get; set; }
-        public string DropOffBranchOfficeName { get; set; }
+        public string DropOffBranchOfficeName { get; set; } = null!;
+
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+
+        // Tiempos reales de pickup/return
+        public DateTime? ActualPickupTime { get; set; }
+        public DateTime? ActualReturnTime { get; set; }
+
+        // Snapshot de tarifa y costos posteriores
         public decimal HourlyRateSnapshot { get; set; }
+        public decimal? OriginalCost { get; set; }
+        public decimal? LateFee { get; set; }
+
+        public ReservationStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

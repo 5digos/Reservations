@@ -13,7 +13,7 @@ namespace Domain.Entities
         public Guid ReservationId { get; set; }
         public ReservationEventType EventType { get; set; }
         public DateTime OccurredAt { get; set; }
-        public string Details { get; set; }
+        public string? Details { get; set; }
 
         
         public Reservation Reservation { get; set; }

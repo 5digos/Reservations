@@ -42,6 +42,7 @@ namespace Domain.Entities
         public decimal? OriginalCost { get; set; }  // Opcionalmente lo llena el Payment Service
         public decimal? LateFee { get; set; }
         public ReservationStatus Status { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public ICollection<ReservationEvent> Events { get; set; }
     }

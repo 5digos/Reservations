@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.HttpClients.Dtos
+namespace Application.Interfaces.IServices
 {
-    public class HourlyRateDto
+    public interface ITimeProvider
     {
-        public decimal Rate { get; set; }
+        DateTime Now { get; }
     }
 }

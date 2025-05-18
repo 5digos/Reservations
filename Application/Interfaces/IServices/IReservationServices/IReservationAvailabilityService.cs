@@ -13,13 +13,13 @@ namespace Application.Interfaces.IServices.IReservationServices
         int branchOfficeId,
         DateTime startTime,
         DateTime endTime,
-        int offset,
-        int size,
+        int? offset,
+        int? size,
         int? category = null,
         int? seatingCapacity = null,
         int? transmissionType = null,
         decimal? maxPrice = null,
-        string color = null,
-        string brand = null);
+        string? color = null,
+        string? brand = null);
     }
 }

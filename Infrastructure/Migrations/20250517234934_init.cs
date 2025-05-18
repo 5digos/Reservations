@@ -24,10 +24,11 @@ namespace Infrastructure.Migrations
                     EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ActualPickupTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ActualReturnTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    HourlyRateSnapshot = table.Column<decimal>(type: "decimal(9,6)", nullable: false),
-                    OriginalCost = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    LateFee = table.Column<decimal>(type: "decimal(9,6)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    HourlyRateSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    OriginalCost = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
+                    LateFee = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -42,7 +43,7 @@ namespace Infrastructure.Migrations
                     ReservationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     EventType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OccurredAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Details = table.Column<string>(type: "varchar(max)", nullable: false)
+                    Details = table.Column<string>(type: "varchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

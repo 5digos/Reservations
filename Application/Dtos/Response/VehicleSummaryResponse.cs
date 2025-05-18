@@ -11,9 +11,15 @@ namespace Application.Dtos.Response
         public Guid Id { get; set; }
         public string Brand { get; set; }
         public string Model { get; set; }
-        public decimal HourlyRate { get; set; }
+        public decimal Price { get; set; }
         public string ImageUrl { get; set; }
-        public string CategoryName { get; set; }
         public int SeatingCapacity { get; set; }
+        public string TransmissionType { get; set; }
+        public string Category { get; set; }
+        //public VehicleCategoryResponse Category { get; set; }
+        //public int BranchOfficeId { get; set; }
+        //public string BranchOfficeName { get; set; }
+
     }
+
 }

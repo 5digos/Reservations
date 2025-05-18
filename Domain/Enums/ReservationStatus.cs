@@ -8,6 +8,7 @@ namespace Domain.Enums
 {
     public enum ReservationStatus
     {
+        Pending,
         Confirmed,     // Reserva confirmada y pendiente de recogida
         Cancelled,     // Reserva cancelada por el usuario
         Completed,     // Reserva completada (vehículo devuelto a tiempo)

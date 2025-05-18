@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Dtos.External
+namespace Infrastructure.HttpClients.Dtos
 {
-    public class VehicleCategoryDto
+    public class VehicleCategoryInfraDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

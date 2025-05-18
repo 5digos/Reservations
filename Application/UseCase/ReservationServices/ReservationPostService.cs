@@ -1,7 +1,9 @@
 ﻿using Application.Dtos.Request;
 using Application.Dtos.Response;
+using Application.Exceptions;
 using Application.Interfaces.ICommand;
 using Application.Interfaces.IQuery;
+using Application.Interfaces.IServices;
 using Application.Interfaces.IServices.IReservationServices;
 using Application.Interfaces.IServices.IVehicleServices;
 using Domain.Entities;
@@ -10,59 +12,65 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Application.UseCase.ReservationServices
 {
     public class ReservationPostService : IReservationPostService
     {
-        private readonly IReservationQuery _reservationQuery;
         private readonly IReservationCommand _reservationCommand;
         private readonly IReservationEventCommand _eventCommand;
         private readonly IVehicleService _vehicleService;
+        private readonly IReservationQuery _reservationQuery;
+        private readonly ITimeProvider _timeProvider;
+        private readonly INotificationService _notificationService;
 
         public ReservationPostService(
-            IReservationQuery reservationQuery,
             IReservationCommand reservationCommand,
             IReservationEventCommand eventCommand,
-            IVehicleService vehicleService)
+            IVehicleService vehicleService,
+            IReservationQuery reservationQuery,
+            ITimeProvider timeProvider,
+            INotificationService notificationService)
         {
-            _reservationQuery = reservationQuery;
             _reservationCommand = reservationCommand;
             _eventCommand = eventCommand;
             _vehicleService = vehicleService;
+            _reservationQuery = reservationQuery;
+            _timeProvider = timeProvider;
+            _notificationService = notificationService;
         }
 
         public async Task<ReservationResponse> Create(int userId, ReservationRequest request)
         {
-            //Validar vehículo existe
-            if (!await _vehicleService.Exists(request.VehicleId))
-                throw new InvalidOperationException("El vehículo no existe.");
+            // Validar sucursales
+            var pickupBranch = await _vehicleService.GetBranchOfficeByIdAsync(request.PickupBranchOfficeId)
+                ?? throw new NotFoundException("Sucursal de recogida no encontrada.");
+            var dropOffBranch = await _vehicleService.GetBranchOfficeByIdAsync(request.DropOffBranchOfficeId)
+                ?? throw new NotFoundException("Sucursal de devolución no encontrada.");
 
-            //Validar estado “Disponible” (VehicleStatusId = 1)
-            var statusId = await _vehicleService.GetStatusId(request.VehicleId);
-            if (statusId != 1)
-                throw new InvalidOperationException(
-                    "El vehículo no está en estado 'Disponible' y no puede reservarse.");
+            // Validar vehículo
+            var vehicle = await _vehicleService.GetVehicleByIdAsync(request.VehicleId)
+                ?? throw new NotFoundException("Vehículo no encontrado.");
+            if (vehicle.StatusId != 1)
+                throw new InvalidValueException("Vehículo no disponible.");
 
-            //Validar sucursales existen
-            if (!await _vehicleService.BranchOfficeExists(request.PickupBranchOfficeId))
-                throw new InvalidOperationException("La sucursal de recogida no existe.");
-            if (!await _vehicleService.BranchOfficeExists(request.DropOffBranchOfficeId))
-                throw new InvalidOperationException("La sucursal de devolución no existe.");
+            var rateSnapshot = vehicle.Price;
 
-            //Validar solapamiento de reservas
-            int bufferHours = 3;
-            bool overlap = await _reservationQuery.HasOverlap(
-                request.VehicleId, request.StartTime, request.EndTime, bufferHours);
-            if (overlap)
-                throw new InvalidOperationException("Vehículo no disponible en el rango solicitado.");
+            // Validar solapamiento
+            if (await _reservationQuery.HasOverlap(
+                request.VehicleId,
+                request.StartTime,
+                request.EndTime,
+                bufferHours: 3))
+            {
+                throw new InvalidValueException("El vehículo no está disponible en el intervalo seleccionado.");
+            }
 
-            //Obtener tarifa del vehículo
-            decimal rate = await _vehicleService.GetHourlyRate(request.VehicleId);
-
-
-            //Crear entidad reserva
+            // Crear reserva
+            var now = _timeProvider.Now;
             var reservation = new Reservation
             {
                 ReservationId = Guid.NewGuid(),
@@ -72,41 +80,49 @@ namespace Application.UseCase.ReservationServices
                 DropOffBranchOfficeId = request.DropOffBranchOfficeId,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
-                HourlyRateSnapshot = rate,
-                Status = ReservationStatus.Confirmed
+                Status = ReservationStatus.Pending,
+                CreatedAt = now,
+                HourlyRateSnapshot = rateSnapshot
             };
-
-            //Guardar reserva
             await _reservationCommand.Add(reservation);
 
-            //Registrar evento Created
+            // Registrar evento
             var evt = new ReservationEvent
             {
                 EventId = Guid.NewGuid(),
                 ReservationId = reservation.ReservationId,
                 EventType = ReservationEventType.Created,
-                OccurredAt = DateTime.Now,
-                Details = "Reserva creada"
+                OccurredAt = now
             };
             await _eventCommand.Add(evt);
 
-            //Obtener nombres de sucursales para el DTO
-            var pickupName = await _vehicleService.GetBranchOfficeName(reservation.PickupBranchOfficeId);
-            var dropoffName = await _vehicleService.GetBranchOfficeName(reservation.DropOffBranchOfficeId);
+            // Encolar notificación
+            await _notificationService.EnqueueEvent(new NotificationEventRequest
+            {
+                UserId = userId,
+                EventType = "ReservationCreated",
+                Payload = JsonSerializer.Serialize(new
+                {
+                    reservation.ReservationId,
+                    pickupBranch.Name,
+                    request.StartTime
+                })
+            });
 
-            
+            // Mapear respuesta
             return new ReservationResponse
             {
                 ReservationId = reservation.ReservationId,
-                UserId = reservation.UserId,
-                VehicleId = reservation.VehicleId,
-                PickupBranchOfficeId = reservation.PickupBranchOfficeId,
-                PickupBranchOfficeName = pickupName,
-                DropOffBranchOfficeId = reservation.DropOffBranchOfficeId,
-                DropOffBranchOfficeName = dropoffName,
-                StartTime = reservation.StartTime,
-                EndTime = reservation.EndTime,
-                HourlyRateSnapshot = rate
+                UserId = userId,
+                VehicleId = request.VehicleId,
+                PickupBranchOfficeId = pickupBranch.BranchOfficeId,
+                PickupBranchOfficeName = pickupBranch.Name,
+                DropOffBranchOfficeId = dropOffBranch.BranchOfficeId,
+                DropOffBranchOfficeName = dropOffBranch.Name,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                Status = reservation.Status,
+                CreatedAt = reservation.CreatedAt
             };
         }
     }

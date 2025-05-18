@@ -27,17 +27,38 @@ namespace Infrastructure.Query
                 .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
         }
 
+
+        //public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours = 3)
+        //{
+        //    // en lugar de r.EndTime.Add(buffer) > start, precomputamos:
+        //    var bufferedStart = start - TimeSpan.FromHours(bufferHours);
+
+        //    return await _context.Reservations
+        //        .AnyAsync(r =>
+        //            r.VehicleId == vehicleId
+        //            && r.Status != ReservationStatus.Cancelled
+        //            && r.Status != ReservationStatus.AutoCancelled
+        //            // el EndTime original debe ser posterior a (start - buffer)
+        //            && r.EndTime > bufferedStart
+        //            && r.StartTime < end
+        //        );
+        //}
+
         public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours = 3)
         {
-            var buffer = TimeSpan.FromHours(bufferHours);
+            // Extendemos el intervalo por ambos lados:
+            var bufferedStart = start.AddHours(-bufferHours);
+            var bufferedEnd = end.AddHours(bufferHours);
 
             return await _context.Reservations
                 .AnyAsync(r =>
                     r.VehicleId == vehicleId
                     && r.Status != ReservationStatus.Cancelled
-                    && r.Status != ReservationStatus.AutoCancelled                    
-                    && r.EndTime.Add(buffer) > start                    
-                    && r.StartTime < end);
+                    && r.Status != ReservationStatus.AutoCancelled
+                    // chequear que haya ANY overlap contra [bufferedStart, bufferedEnd]
+                    && r.StartTime < bufferedEnd
+                    && r.EndTime > bufferedStart
+                );
         }
 
         public async Task<int?> GetLastReturnBranch(Guid vehicleId, DateTime beforeTime)
