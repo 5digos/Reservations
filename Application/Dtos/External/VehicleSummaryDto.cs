@@ -28,6 +28,7 @@ namespace Application.Dtos.External
         public int BranchOfficeId { get; set; }     // id de la sucursal origen
         public string ImageUrl { get; set; }
         public string Category { get; set; }
+        public string Color { get; set; }
         public string TransmissionType { get; set; }
         public string BranchOfficeName { get; set; } // nombre de la sucursal origen
     }

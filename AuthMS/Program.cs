@@ -22,12 +22,20 @@ using System.Text;
 using Infrastructure.Service;
 using AuthMS.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using System.Text.Json.Serialization;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 #if DEBUG
 builder.Configuration.AddUserSecrets<Program>();

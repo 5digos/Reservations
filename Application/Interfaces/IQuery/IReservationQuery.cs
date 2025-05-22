@@ -12,5 +12,6 @@ namespace Application.Interfaces.IQuery
         Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours);
         Task<Reservation> GetById(Guid reservationId);
         Task<int?> GetLastReturnBranch(Guid vehicleId, DateTime beforeTime);
+        Task<int?> GetNextPickupBranch(Guid vehicleId, DateTime afterTime);
     }
 }

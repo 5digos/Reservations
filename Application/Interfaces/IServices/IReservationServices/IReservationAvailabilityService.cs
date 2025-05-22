@@ -10,7 +10,8 @@ namespace Application.Interfaces.IServices.IReservationServices
     public interface IReservationAvailabilityService
     {
         Task<PagedResult<VehicleSummaryResponse>> GetAvailableVehiclesAsync(
-        int branchOfficeId,
+        int pickupBranchOfficeId,
+        int dropOffBranchOfficeId,
         DateTime startTime,
         DateTime endTime,
         int? offset,

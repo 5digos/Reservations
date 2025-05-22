@@ -12,14 +12,19 @@ namespace Application.Validators
     {
         public GetAvailableVehiclesRequestValidator()
         {
-            RuleFor(x => x.BranchOfficeId)
+            RuleFor(x => x.PickupBranchOfficeId)
                 .GreaterThan(0).WithMessage("La sucursal de recogida es obligatoria y debe ser mayor a 0.");
 
+            RuleFor(x => x.DropOffBranchOfficeId)
+                .GreaterThan(0).WithMessage("La sucursal de devolucion es obligatoria y debe ser mayor a 0.");
+
             RuleFor(x => x.StartTime)
+                .GreaterThan(_ => DateTime.Now)
+                .WithMessage("La fecha y hora de inicio deben ser posteriores a la fecha y hora actual.")
                 .LessThan(x => x.EndTime)
                 .WithMessage("La fecha de inicio debe ser anterior a la fecha de fin.");
 
-            RuleFor(x => x.EndTime)
+            RuleFor(x => x.EndTime)                
                 .GreaterThan(x => x.StartTime)
                 .WithMessage("La fecha de fin debe ser posterior a la fecha de inicio.");
 

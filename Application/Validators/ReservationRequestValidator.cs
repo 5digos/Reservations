@@ -20,7 +20,9 @@ namespace Application.Validators
               .Must(dt => dt.Minute == 0 && dt.Second == 0)
               .WithMessage("La hora de inicio debe ser un número entero de hora (sin minutos ni segundos).")
               .LessThan(x => x.EndTime)
-              .WithMessage("StartTime debe ser anterior a EndTime.");
+              .WithMessage("StartTime debe ser anterior a EndTime.")
+              .GreaterThan(_ => DateTime.Now)
+              .WithMessage("La fecha y hora de inicio deben ser mayores que la fecha y hora actual.");
 
             RuleFor(x => x.EndTime)
               .Must(dt => dt.Minute == 0 && dt.Second == 0)

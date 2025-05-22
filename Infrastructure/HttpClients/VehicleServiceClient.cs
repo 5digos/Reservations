@@ -242,7 +242,7 @@ namespace Infrastructure.HttpClients
         }
 
         public async Task<List<VehicleSummaryDto>> GetVehiclesAsync(
-            int branchOfficeId,
+            int? branchOfficeId,
             DateTime startTime,
             DateTime endTime,
             int? category = null,
@@ -256,6 +256,9 @@ namespace Infrastructure.HttpClients
         {
             // Montamos los parámetros de query (igual que el endpoint de VehicleMS)
             var query = new List<string> { $"branchOffice={branchOfficeId}" };
+
+            if (branchOfficeId.HasValue)
+                query.Add($"category={branchOfficeId.Value}");
 
             if (category.HasValue) 
                 query.Add($"category={category.Value}");
@@ -298,6 +301,7 @@ namespace Infrastructure.HttpClients
                 BranchOfficeName = v.BranchOffice.Name,
                 ImageUrl = v.ImageUrl,
                 Category = v.Category.Name,
+                Color = v.Color,
                 TransmissionType = v.TransmissionType.Name
             }).ToList();
         }

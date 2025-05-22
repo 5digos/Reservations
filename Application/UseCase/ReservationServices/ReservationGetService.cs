@@ -52,7 +52,7 @@ namespace Application.UseCase.ReservationServices
                 OriginalCost = res.OriginalCost,
                 LateFee = res.LateFee,
                 Status = res.Status,
-                CreatedAt = res.CreatedAt
+                //CreatedAt = res.CreatedAt
             };
         }
     }

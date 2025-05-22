@@ -26,7 +26,7 @@ namespace Application.Interfaces.IServices.IVehicleServices
         //);
 
         Task<List<VehicleSummaryDto>> GetVehiclesAsync(
-            int branchOfficeId,
+            int? branchOfficeId,
             DateTime startTime,
             DateTime endTime,
             int? category = null,

@@ -92,7 +92,8 @@ namespace AuthMS.Controllers
                 await _getAvailableVehiclesRequestValidator.Validate(request);
 
                 var paged = await _availabilityService.GetAvailableVehiclesAsync(
-                    request.BranchOfficeId,
+                    request.PickupBranchOfficeId,
+                    request.DropOffBranchOfficeId,
                     request.StartTime,
                     request.EndTime,
                     request.Offset,
@@ -113,6 +114,10 @@ namespace AuthMS.Controllers
             catch (ValidationException ex)
             {
                 return BadRequest(ex.Errors);
+            }
+            catch (InvalidValueException ex)
+            {
+                return Conflict(new ApiError { Message = ex.Message });
             }
         }
 

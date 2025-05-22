@@ -71,5 +71,17 @@ namespace Infrastructure.Query
             return last?.DropOffBranchOfficeId;
         }
 
+        public async Task<int?> GetNextPickupBranch(Guid vehicleId, DateTime afterTime)
+        {
+            var next = await _context.Reservations
+                .Where(r => r.VehicleId == vehicleId
+                            && r.StartTime >= afterTime
+                            && r.Status != ReservationStatus.Cancelled
+                            && r.Status != ReservationStatus.AutoCancelled)
+                .OrderBy(r => r.StartTime)
+                .FirstOrDefaultAsync();
+
+            return next?.PickupBranchOfficeId;
+        }
     }
 }

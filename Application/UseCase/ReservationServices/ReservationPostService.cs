@@ -45,6 +45,10 @@ namespace Application.UseCase.ReservationServices
 
         public async Task<ReservationResponse> Create(int userId, ReservationRequest request)
         {
+            // Validar Fecha de reserva
+            if (request.StartTime.Date > _timeProvider.Now.Date.AddDays(1))
+                throw new InvalidValueException("La fecha de retiro debe ser hoy o mañana.");
+
             // Validar sucursales
             var pickupBranch = await _vehicleService.GetBranchOfficeByIdAsync(request.PickupBranchOfficeId)
                 ?? throw new NotFoundException("Sucursal de recogida no encontrada.");
@@ -58,6 +62,24 @@ namespace Application.UseCase.ReservationServices
                 throw new InvalidValueException("Vehículo no disponible.");
 
             var rateSnapshot = vehicle.Price;
+
+            var nextPickup = await _reservationQuery
+                  .GetNextPickupBranch(request.VehicleId, request.EndTime);
+
+            if (nextPickup.HasValue && nextPickup.Value != request.DropOffBranchOfficeId)
+            {
+                throw new InvalidValueException(
+                    "Este vehículo tiene una reserva próxima en otra sucursal; no puede devolverse en una diferente.");
+            }
+
+            var lastDropOff = await _reservationQuery
+                .GetLastReturnBranch(request.VehicleId, request.StartTime);
+
+            if (lastDropOff.HasValue && lastDropOff.Value != request.PickupBranchOfficeId)
+            {
+                throw new InvalidValueException(
+                    "Este vehículo no estará disponible en la sucursal de recogida al inicio de tu reserva.");
+            }
 
             // Validar solapamiento
             if (await _reservationQuery.HasOverlap(
@@ -101,13 +123,13 @@ namespace Application.UseCase.ReservationServices
             {
                 UserId = userId,
                 EventType = "ReservationCreated",
-                Payload = JsonSerializer.Serialize(new
+                Payload = new
                 {
-                    reservation.ReservationId,
-                    pickupBranch.Name,
-                    request.StartTime
-                })
-            });
+                    ReservationId = reservation.ReservationId,
+                    BranchName = pickupBranch.Name,
+                    StartTime = request.StartTime
+                }
+            });            
 
             // Mapear respuesta
             return new ReservationResponse
@@ -121,8 +143,8 @@ namespace Application.UseCase.ReservationServices
                 DropOffBranchOfficeName = dropOffBranch.Name,
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
-                Status = reservation.Status,
-                CreatedAt = reservation.CreatedAt
+                Status = reservation.Status
+                //CreatedAt = reservation.CreatedAt
             };
         }
     }

@@ -16,6 +16,7 @@ namespace Application.Dtos.Response
         public int SeatingCapacity { get; set; }
         public string TransmissionType { get; set; }
         public string Category { get; set; }
+        public string Color { get; set; }
         //public VehicleCategoryResponse Category { get; set; }
         //public int BranchOfficeId { get; set; }
         //public string BranchOfficeName { get; set; }

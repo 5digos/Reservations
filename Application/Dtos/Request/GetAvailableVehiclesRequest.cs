@@ -8,7 +8,8 @@ namespace Application.Dtos.Request
 {
     public class GetAvailableVehiclesRequest
     {
-        public int BranchOfficeId { get; set; }
+        public int PickupBranchOfficeId { get; set; }
+        public int DropOffBranchOfficeId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
