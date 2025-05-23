@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Infrastructure.Query
 {
@@ -82,6 +83,42 @@ namespace Infrastructure.Query
                 .FirstOrDefaultAsync();
 
             return next?.PickupBranchOfficeId;
+        }
+
+        public async Task<(List<Reservation> Reservations, int TotalCount)> GetReservationsAsync(
+            int userId,
+            ReservationStatus? status,
+            DateTime? from,
+            DateTime? to,
+            int? offset,
+            int? size)
+        {
+            var query = _context.Reservations
+                .Where(r => r.UserId == userId)
+                .AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(r => r.Status == status.Value);
+
+            if (from.HasValue)
+                query = query.Where(r => r.StartTime >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(r => r.EndTime <= to.Value);
+
+            var total = await query.CountAsync();
+
+            if (offset.HasValue)
+                query = query.Skip(offset.Value);
+
+            if (size.HasValue)
+                query = query.Take(size.Value);
+
+            var list = await query
+                .OrderByDescending(r => r.StartTime)                
+                .ToListAsync();
+
+            return (list, total);
         }
     }
 }

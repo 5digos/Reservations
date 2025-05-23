@@ -26,17 +26,21 @@ namespace AuthMS.Controllers
         private readonly IReservationGetService _getService;
         private readonly IReservationAvailabilityService _availabilityService;
         private readonly IValidatorHandler<GetAvailableVehiclesRequest> _getAvailableVehiclesRequestValidator;
+        private readonly IValidatorHandler<GetReservationsRequest> _getReservationsRequestValidator;
 
         public ReservationsController(
             IReservationPostService postService,
             IReservationGetService getService,
             IReservationAvailabilityService availabilityService,
-            IValidatorHandler<GetAvailableVehiclesRequest> getAvailableVehiclesRequestValidator)
+            IValidatorHandler<GetAvailableVehiclesRequest> getAvailableVehiclesRequestValidator,
+            IValidatorHandler<GetReservationsRequest> getReservationsRequestValidator)
         {
             _postService = postService;
             _getService = getService;
             _availabilityService = availabilityService;
             _getAvailableVehiclesRequestValidator = getAvailableVehiclesRequestValidator;
+            _getReservationsRequestValidator = getReservationsRequestValidator;
+
         }
 
         ///// <summary>
@@ -219,6 +223,43 @@ namespace AuthMS.Controllers
             {
                 return NotFound(new ApiError { Message = ex.Message });
             }
+        }
+
+
+        /// <summary>
+        /// Obtiene las reservas del usuario, con filtros opcionales y paginación.
+        /// </summary>
+        [Authorize(Policy = "ActiveUser")]
+        [HttpGet]
+        public async Task<IActionResult> GetReservations([FromQuery] GetReservationsRequest request)
+        {
+            try
+            {               
+                await _getReservationsRequestValidator.Validate(request);
+                            
+                var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == "UserId");
+                if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                    return Forbid();
+                
+                var result = await _getService.GetReservationsAsync(
+                    userId,
+                    request.Status,
+                    request.From,
+                    request.To,
+                    request.Offset,
+                    request.Size);
+                
+                Response.Headers.Add("offset", (request.Offset).ToString());
+                Response.Headers.Add("size", (request.Size).ToString());
+                Response.Headers.Add("totalCount", result.TotalCount.ToString());
+
+                return Ok(result.Items);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            
         }
     }
 }

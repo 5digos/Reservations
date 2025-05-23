@@ -97,6 +97,8 @@ builder.Services.AddValidatorsFromAssembly(typeof(ReservationRequestValidator).A
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<GetAvailableVehiclesRequestValidator>();
 builder.Services.AddScoped<IValidatorHandler<GetAvailableVehiclesRequest>, ValidatorHandler<GetAvailableVehiclesRequest>>();
+builder.Services.AddValidatorsFromAssemblyContaining<GetReservationsRequestValidator>();
+builder.Services.AddScoped<IValidatorHandler<GetReservationsRequest>, ValidatorHandler<GetReservationsRequest>>();
 
 
 //TokenConfiguration
