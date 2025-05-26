@@ -260,27 +260,27 @@ namespace Infrastructure.HttpClients
             if (branchOfficeId.HasValue)
                 query.Add($"category={branchOfficeId.Value}");
 
-            if (category.HasValue) 
+            if (category.HasValue)
                 query.Add($"category={category.Value}");
-            
-            if (seatingCapacity.HasValue) 
+
+            if (seatingCapacity.HasValue)
                 query.Add($"seatingCapacity={seatingCapacity.Value}");
-            
-            if (transmissionType.HasValue) 
+
+            if (transmissionType.HasValue)
                 query.Add($"transmissionType={transmissionType.Value}");
-            
-            if (maxPrice.HasValue) 
+
+            if (maxPrice.HasValue)
                 query.Add($"maxPrice={maxPrice.Value}");
-            
-            if (!string.IsNullOrEmpty(color)) 
+
+            if (!string.IsNullOrEmpty(color))
                 query.Add($"color={Uri.EscapeDataString(color)}");
-            
-            if (!string.IsNullOrEmpty(brand)) 
+
+            if (!string.IsNullOrEmpty(brand))
                 query.Add($"brand={Uri.EscapeDataString(brand)}");
-            
+
             if (offset.HasValue)
                 query.Add($"offset={offset.Value}");
-            
+
             if (size.HasValue)
                 query.Add($"size={size.Value}");
 
@@ -355,6 +355,23 @@ namespace Infrastructure.HttpClients
                 Name = infra.Name
                 // mapear otros campos si los necesitas
             };
+        }
+
+        public async Task UpdateBranchOffice(Guid vehicleId, int branchOfficeId)
+        {
+            var response = await _httpClient.PatchAsync(
+                $"api/v1/Vehicle/{vehicleId}/branchOffice?branchOfficeId={branchOfficeId}",
+                content: null);
+            response.EnsureSuccessStatusCode();
+        }
+
+
+        public async Task<VehicleReviewResponse> AddReviewAsync(Guid vehicleId, VehicleReviewRequest req)
+        {
+            var response = await _httpClient.PatchAsJsonAsync(
+                $"api/v1/vehicle/{vehicleId}/reviews", req);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<VehicleReviewResponse>()!;
         }
     }
 }

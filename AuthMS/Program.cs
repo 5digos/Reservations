@@ -23,6 +23,8 @@ using Infrastructure.Service;
 using AuthMS.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json.Serialization;
+using AuthMS.Handlers;
+using System.Net.Http.Headers;
 
 
 
@@ -61,9 +63,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.Converters.Add(new DateTimeWithoutFractionConverter());
+    });
+
 //Services
 builder.Services.AddScoped<IReservationPostService, ReservationPostService>();
 builder.Services.AddScoped<IReservationGetService, ReservationGetService>();
+builder.Services.AddScoped<IReservationPutService, ReservationPutService>();
 builder.Services.AddScoped<IReservationAvailabilityService, ReservationAvailabilityService>();
 builder.Services.AddSingleton<ITimeProvider, ArgentinaTimeProvider>();
 
@@ -99,6 +109,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<GetAvailableVehiclesRequest
 builder.Services.AddScoped<IValidatorHandler<GetAvailableVehiclesRequest>, ValidatorHandler<GetAvailableVehiclesRequest>>();
 builder.Services.AddValidatorsFromAssemblyContaining<GetReservationsRequestValidator>();
 builder.Services.AddScoped<IValidatorHandler<GetReservationsRequest>, ValidatorHandler<GetReservationsRequest>>();
+//builder.Services.AddValidatorsFromAssemblyContaining<ReservationUpdateRequestValidator>();
+//builder.Services.AddScoped<IValidatorHandler<ReservationUpdateRequest>, ValidatorHandler<ReservationUpdateRequest>>();
+
+
+
 
 
 //TokenConfiguration
@@ -142,6 +157,19 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new SameUserRequirement()));
 });
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddTransient<BearerTokenHandler>();
+
+//Configurar el HttpClient y asociarle el handler
+builder.Services
+    .AddHttpClient<IVehicleService, VehicleServiceClient>(client =>
+    {
+        client.BaseAddress = new Uri(builder.Configuration["VehicleService:BaseUrl"]);
+        client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+    })
+    .AddHttpMessageHandler<BearerTokenHandler>();
 
 builder.Services.AddCors(options =>
 {

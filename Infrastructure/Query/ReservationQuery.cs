@@ -27,23 +27,7 @@ namespace Infrastructure.Query
                 .Include(r => r.Events)
                 .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
         }
-
-
-        //public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours = 3)
-        //{
-        //    // en lugar de r.EndTime.Add(buffer) > start, precomputamos:
-        //    var bufferedStart = start - TimeSpan.FromHours(bufferHours);
-
-        //    return await _context.Reservations
-        //        .AnyAsync(r =>
-        //            r.VehicleId == vehicleId
-        //            && r.Status != ReservationStatus.Cancelled
-        //            && r.Status != ReservationStatus.AutoCancelled
-        //            // el EndTime original debe ser posterior a (start - buffer)
-        //            && r.EndTime > bufferedStart
-        //            && r.StartTime < end
-        //        );
-        //}
+        
 
         public async Task<bool> HasOverlap(Guid vehicleId, DateTime start, DateTime end, int bufferHours = 3)
         {
@@ -115,10 +99,64 @@ namespace Infrastructure.Query
                 query = query.Take(size.Value);
 
             var list = await query
-                .OrderByDescending(r => r.StartTime)                
+                .OrderByDescending(r => r.StartTime)
                 .ToListAsync();
 
             return (list, total);
         }
+
+        public async Task<bool> HasOverlapExceptAsync(
+            Guid vehicleId,
+            DateTime start,
+            DateTime end,
+            int bufferHours,
+            Guid excludeReservationId)
+        {
+            var bufferedStart = start.AddHours(-bufferHours);
+            var bufferedEnd = end.AddHours(bufferHours);
+
+            return await _context.Reservations
+                .Where(r => r.ReservationId != excludeReservationId)
+                .AnyAsync(r =>
+                    r.VehicleId == vehicleId
+                    && r.Status != ReservationStatus.Cancelled
+                    && r.Status != ReservationStatus.AutoCancelled
+                    && r.StartTime < bufferedEnd
+                    && r.EndTime > bufferedStart
+                );
+        }
+
+        public async Task<int?> GetLastReturnBranchExceptAsync(
+            Guid vehicleId,
+            DateTime beforeTime,
+            Guid excludeReservationId)
+        {
+            var last = await _context.Reservations
+                .Where(r =>
+                    r.VehicleId == vehicleId
+                    && r.ReservationId != excludeReservationId
+                    && r.EndTime <= beforeTime)
+                .OrderByDescending(r => r.EndTime)
+                .FirstOrDefaultAsync();
+
+            return last?.DropOffBranchOfficeId;
+        }
+
+        public async Task<int?> GetNextPickupBranchExceptAsync(
+            Guid vehicleId,
+            DateTime afterTime,
+            Guid excludeReservationId)
+        {
+            var next = await _context.Reservations
+                .Where(r =>
+                    r.VehicleId == vehicleId
+                    && r.ReservationId != excludeReservationId
+                    && r.StartTime >= afterTime)
+                .OrderBy(r => r.StartTime)
+                .FirstOrDefaultAsync();
+
+            return next?.PickupBranchOfficeId;
+        }
+
     }
 }

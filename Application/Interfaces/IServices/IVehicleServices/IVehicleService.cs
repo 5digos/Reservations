@@ -41,5 +41,8 @@ namespace Application.Interfaces.IServices.IVehicleServices
         Task<VehicleDetailDto> GetVehicleByIdAsync(Guid vehicleId);
 
         Task<BranchOfficeDto> GetBranchOfficeByIdAsync(int branchOfficeId);
+        Task UpdateBranchOffice(Guid vehicleId, int branchOfficeId);
+        Task<VehicleReviewResponse> AddReviewAsync(Guid vehicleId, VehicleReviewRequest req);
+
     }
 }
