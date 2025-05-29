@@ -49,9 +49,7 @@ namespace Application.UseCase.ReservationServices
                 EndTime = res.EndTime,
                 ActualPickupTime = res.ActualPickupTime,
                 ActualReturnTime = res.ActualReturnTime,
-                HourlyRateSnapshot = res.HourlyRateSnapshot,
-                TotalAmount = res.OriginalCost,
-                LateFee = res.LateFee,
+                HourlyRateSnapshot = res.HourlyRateSnapshot,                  
                 Status = res.Status
             };
         }

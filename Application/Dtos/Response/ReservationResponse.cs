@@ -27,11 +27,9 @@ namespace Application.Dtos.Response
         public DateTime? ActualReturnTime { get; set; }
 
         // Snapshot de tarifa y costos posteriores
-        public decimal? HourlyRateSnapshot { get; set; }
-        public decimal? TotalAmount { get; set; }
-        public decimal? LateFee { get; set; }
+        public decimal? HourlyRateSnapshot { get; set; }        
 
         public ReservationStatus Status { get; set; }
-        //public DateTime? CreatedAt { get; set; }
+        
     }
 }

@@ -60,14 +60,7 @@ namespace Infrastructure.Persistence
                 entity.Property(r => r.HourlyRateSnapshot)
                     .IsRequired()
                     .HasColumnType("decimal(10,2)");
-
-                entity.Property(r => r.OriginalCost)
-                    .IsRequired(false)
-                    .HasColumnType("decimal(10,2)");
-
-                entity.Property(r => r.LateFee)
-                    .IsRequired(false)
-                    .HasColumnType("decimal(10,2)");
+                
 
                 entity.Property(r => r.Status)
                     .IsRequired()

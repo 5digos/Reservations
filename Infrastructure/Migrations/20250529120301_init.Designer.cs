@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250517234934_init")]
+    [Migration("20250529120301_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -47,12 +47,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("HourlyRateSnapshot")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("LateFee")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("OriginalCost")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("PickupBranchOfficeId")

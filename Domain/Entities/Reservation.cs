@@ -19,9 +19,7 @@ namespace Domain.Entities
         public DateTime EndTime { get; set; }
         public DateTime? ActualPickupTime { get; set; }
         public DateTime? ActualReturnTime { get; set; }        
-        public decimal HourlyRateSnapshot { get; set; }  // Snapshot de tarifa
-        public decimal? OriginalCost { get; set; }  // Opcionalmente lo llena el Payment Service
-        public decimal? LateFee { get; set; }
+        public decimal HourlyRateSnapshot { get; set; }  // Snapshot de tarifa        
         public ReservationStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
 

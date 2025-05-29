@@ -289,83 +289,7 @@ namespace Application.UseCase.ReservationServices
                 HourlyRateSnapshot = res.HourlyRateSnapshot,
                 Status = res.Status
             };
-        }
-
-
-        //public async Task<ReservationResponse> Pickup(int userId, Guid reservationId, ActualPickupRequest request)
-        //{
-        //    // 1) Cargo reserva
-        //    var res = await _reservationQuery.GetById(reservationId)
-        //              ?? throw new NotFoundException("Reserva no encontrada.");
-
-        //    // 2) Sólo el mismo usuario puede hacer el pickup
-        //    if (res.UserId != userId)
-        //        throw new UnauthorizedAccessException("No puedes registrar el retiro de esta reserva.");
-
-        //    // 3) Sólo si está Confirmed
-        //    if (res.Status != ReservationStatus.Confirmed)
-        //        throw new InvalidValueException("Sólo las reservas confirmadas pueden iniciar el retiro.");
-
-        //    // 4) Determino la hora de pickup
-        //    var now = _timeProvider.Now;
-        //    var actual = request.ActualPickupTime.HasValue
-        //        ? request.ActualPickupTime.Value
-        //        : now;
-
-        //    // (Opcional: valida que actual esté dentro de un rango razonable)
-        //    if (actual < res.StartTime.AddHours(-1) || actual > now.AddHours(1))
-        //        throw new InvalidValueException("La hora de retiro proporcionada no es válida.");
-
-        //    // 5) Actualizo entidad
-        //    res.ActualPickupTime = actual;
-        //    res.Status = ReservationStatus.InProgress;
-        //    await _reservationCommand.Update(res);
-
-        //    // 6) Registro evento
-        //    await _eventCommand.Add(new ReservationEvent
-        //    {
-        //        EventId = Guid.NewGuid(),
-        //        ReservationId = reservationId,
-        //        EventType = ReservationEventType.PickedUp,
-        //        OccurredAt = now,
-        //        Details = "Vehiculo retirado"
-        //    });
-
-        //    // 7) Encolo notificación
-        //    var pickupBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.PickupBranchOfficeId)
-        //                            ?? throw new NotFoundException("Sucursal de recogida no encontrada.");
-        //    var dropOffBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.DropOffBranchOfficeId)
-        //                             ?? throw new NotFoundException("Sucursal de devolución no encontrada.");
-
-        //    await _notificationService.EnqueueEvent(new NotificationEventRequest
-        //    {
-        //        UserId = userId,
-        //        EventType = "ReservationPickedUp",
-        //        Payload = new
-        //        {
-        //            ReservationId = reservationId,
-        //            PickupBranchName = pickupBranch.Name,
-        //            DropOffBranchName = dropOffBranch.Name,
-        //            ActualPickupTime = actual,
-        //            EndTime = res.EndTime
-        //        }
-        //    });
-
-        //    return new ReservationResponse
-        //    {
-        //        ReservationId = res.ReservationId,
-        //        UserId = res.UserId,
-        //        VehicleId = res.VehicleId,
-        //        PickupBranchOfficeId = res.PickupBranchOfficeId,
-        //        PickupBranchOfficeName = pickupBranch.Name,
-        //        DropOffBranchOfficeId = res.DropOffBranchOfficeId,
-        //        DropOffBranchOfficeName = dropOffBranch.Name,
-        //        StartTime = res.StartTime,
-        //        ActualPickupTime = res.ActualPickupTime,
-        //        EndTime = res.EndTime,
-        //        Status = res.Status
-        //    };
-        //}
+        }        
 
 
         public async Task<ReservationResponse> Pickup(int userId, Guid reservationId)
@@ -442,82 +366,7 @@ namespace Application.UseCase.ReservationServices
             };
         }
 
-
-        //public async Task<ReservationResponse> Return(int userId, Guid reservationId, ActualReturnRequest request)
-        //{
-        //    // 1) Cargo reserva
-        //    var res = await _reservationQuery.GetById(reservationId)
-        //              ?? throw new NotFoundException("Reserva no encontrada.");
-
-        //    // 2) Sólo el mismo usuario puede devolver
-        //    if (res.UserId != userId)
-        //        throw new UnauthorizedAccessException("No puedes registrar la devolución de esta reserva.");
-
-        //    // 3) Sólo si está en curso (InProgress)
-        //    if (res.Status != ReservationStatus.InProgress)
-        //        throw new InvalidValueException("Sólo las reservas en curso pueden devolverse.");
-
-        //    // 4) Calculo hora de retorno
-        //    var now = _timeProvider.Now;
-        //    var actual = request.ActualReturnTime ?? now;
-
-        //    if (res.ActualPickupTime.HasValue && actual < res.ActualPickupTime.Value)
-        //        throw new InvalidValueException("La hora de devolución no puede ser anterior al retiro.");
-
-        //    // 5) Actualizo entidad
-        //    res.ActualReturnTime = actual;            
-        //    await _reservationCommand.Update(res);
-
-        //    // 6) Registro evento
-        //    await _eventCommand.Add(new ReservationEvent
-        //    {
-        //        EventId = Guid.NewGuid(),
-        //        ReservationId = reservationId,
-        //        EventType = ReservationEventType.VehicleReturned,
-        //        OccurredAt = now,
-        //        Details = "Vehiculo devuelto"
-        //    });
-
-        //    // Actualizar la sucursal del vehículo en VehicleMS
-        //    await _vehicleService.UpdateBranchOffice(res.VehicleId, res.DropOffBranchOfficeId);
-
-        //    // 7) Encolo notificación
-        //    var pickupBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.PickupBranchOfficeId)
-        //                            ?? throw new NotFoundException("Sucursal de recogida no encontrada.");
-        //    var dropOffBranch = await _vehicleService.GetBranchOfficeByIdAsync(res.DropOffBranchOfficeId)
-        //                             ?? throw new NotFoundException("Sucursal de devolución no encontrada.");
-
-        //    await _notificationService.EnqueueEvent(new NotificationEventRequest
-        //    {
-        //        UserId = userId,
-        //        EventType = "VehicleReturned",
-        //        Payload = new
-        //        {
-        //            ReservationId = reservationId,
-        //            PickupBranchName = pickupBranch.Name,
-        //            DropOffBranchName = dropOffBranch.Name,
-        //            ActualPickupTime = res.ActualPickupTime,
-        //            ActualReturnTime = actual
-        //        }
-        //    });            
-
-        //    return new ReservationResponse
-        //    {
-        //        ReservationId = res.ReservationId,
-        //        UserId = res.UserId,
-        //        VehicleId = res.VehicleId,
-        //        PickupBranchOfficeId = res.PickupBranchOfficeId,
-        //        PickupBranchOfficeName = pickupBranch.Name,
-        //        DropOffBranchOfficeId = res.DropOffBranchOfficeId,
-        //        DropOffBranchOfficeName = dropOffBranch.Name,
-        //        StartTime = res.StartTime,                
-        //        EndTime = res.EndTime,
-        //        ActualPickupTime = res.ActualPickupTime,
-        //        ActualReturnTime = res.ActualReturnTime,
-        //        Status = res.Status
-        //    };
-        //}
-
+        
         public async Task<ReservationResponse> Return(int userId, Guid reservationId)
         {
             // 1) Cargo reserva
@@ -610,9 +459,7 @@ namespace Application.UseCase.ReservationServices
                 throw new InvalidValueException(
                     "Solo reservas con vehículo devuelto pueden ser pagadas.");
 
-            // 4) Actualizar montos y estado
-            res.OriginalCost = req.TotalAmount;
-            res.LateFee = req.LateFee;
+            // 4) Actualizar estado            
             res.Status = ReservationStatus.Paid;
             await _reservationCommand.Update(res);
 
@@ -661,9 +508,7 @@ namespace Application.UseCase.ReservationServices
                 EndTime = res.EndTime,
                 ActualPickupTime = res.ActualPickupTime,
                 ActualReturnTime = res.ActualReturnTime,
-                HourlyRateSnapshot = res.HourlyRateSnapshot,
-                TotalAmount = res.OriginalCost,
-                LateFee = res.LateFee,
+                HourlyRateSnapshot = res.HourlyRateSnapshot,                
                 Status = res.Status
             };
         }

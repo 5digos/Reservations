@@ -46,12 +46,6 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("HourlyRateSnapshot")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal?>("LateFee")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<decimal?>("OriginalCost")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<int>("PickupBranchOfficeId")
                         .HasColumnType("int");
 

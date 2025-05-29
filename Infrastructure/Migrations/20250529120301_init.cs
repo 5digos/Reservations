@@ -25,8 +25,6 @@ namespace Infrastructure.Migrations
                     ActualPickupTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ActualReturnTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     HourlyRateSnapshot = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    OriginalCost = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
-                    LateFee = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
